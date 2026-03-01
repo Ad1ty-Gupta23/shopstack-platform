@@ -1,6 +1,6 @@
-const { check, validationResult } = require("express-validator");
+const { body, validationResult } = require("express-validator");
 
-const EMAIL_REGEX = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 function validateEmail(email) {
   return EMAIL_REGEX.test(email);
@@ -8,13 +8,13 @@ function validateEmail(email) {
 
 // Registration validation rules
 const registerValidation = [
-  check("email")
+  body("email")
     .isEmail()
     .withMessage("Invalid email format"),
-  check("password")
+  body("password")
     .isLength({ min: 8 })
     .withMessage("Password must be at least 8 characters"),
-  check("name")
+  body("name")
     .notEmpty()
     .withMessage("Name is required"),
 ];

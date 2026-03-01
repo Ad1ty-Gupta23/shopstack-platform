@@ -7,6 +7,7 @@ const { Order } = require("../models");
 const router = express.Router();
 
 const TEMPLATE_PATH = path.join(__dirname, "..", "templates", "report.html");
+const cachedTemplate = fs.readFileSync(TEMPLATE_PATH, "utf-8");
 
 // GET /api/reports/sales
 router.get("/sales", authenticate, async (req, res) => {
@@ -18,7 +19,7 @@ router.get("/sales", authenticate, async (req, res) => {
       limit: 100,
     });
 
-    let template = fs.readFileSync(TEMPLATE_PATH, "utf-8");
+    let template = cachedTemplate;
 
     // Generate report data
     const totalRevenue = orders.reduce(

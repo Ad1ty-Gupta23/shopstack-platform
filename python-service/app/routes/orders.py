@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
+from sqlalchemy.orm import joinedload
+
 from app import db
 from app.models.order import Order, OrderItem
 from app.models.product import Product
@@ -13,18 +15,11 @@ orders_bp = Blueprint("orders", __name__)
 def list_orders():
     user_id = get_jwt_identity()
 
-    orders = Order.query.filter_by(user_id=int(user_id)).all()
+    orders = Order.query.filter_by(user_id=int(user_id))\
+        .options(joinedload(Order.items).joinedload(OrderItem.product))\
+        .all()
 
-    result = []
-    for order in orders:
-        order_data = order.to_dict()
-        order_data["items"] = []
-        for item in order.items:
-            item_data = item.to_dict()
-            if item.product:
-                item_data["product_name"] = item.product.name
-            order_data["items"].append(item_data)
-        result.append(order_data)
+    result = [order.to_dict(include_items=True) for order in orders]
 
     return jsonify({
         "orders": result,
@@ -86,7 +81,7 @@ def create_order():
     discount_code = data.get("discount_code")
 
     if discount_code:
-        subtotal, discount_amount = apply_discount(subtotal, discount_code)
+        _, discount_amount = apply_discount(subtotal, discount_code)
 
     total = subtotal + tax - discount_amount
 
