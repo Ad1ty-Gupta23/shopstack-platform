@@ -33,23 +33,23 @@ router.get("/", async (req, res) => {
 // GET /api/products/search
 router.get("/search", async (req, res) => {
   try {
-    const Fuse = require("fuse.js");
+    const { Op } = require("sequelize");
     const { q } = req.query;
 
     if (!q) {
       return res.status(400).json({ error: "Search query 'q' is required" });
     }
 
-    const products = await Product.findAll();
-    const fuse = new Fuse(
-      products.map((p) => formatProductResponse(p)),
-      {
-        keys: ["name", "description"],
-        threshold: 0.4,
-      }
-    );
+    const products = await Product.findAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.like]: `%${q}%` } },
+          { description: { [Op.like]: `%${q}%` } },
+        ],
+      },
+    });
 
-    const results = fuse.search(q).map((r) => r.item);
+    const results = products.map((p) => formatProductResponse(p));
     res.json({ products: results, count: results.length });
   } catch (error) {
     console.error("Search error:", error);
