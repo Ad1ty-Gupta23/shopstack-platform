@@ -40,6 +40,7 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - FLASK_ENV=staging
       - SECRET_KEY=supersecretkey123
+      - STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
     depends_on:
       postgres:
         condition: service_healthy
